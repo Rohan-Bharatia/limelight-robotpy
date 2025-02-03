@@ -6,8 +6,11 @@ import wpimath.geometry
 import wpinet
 import math
 import socket
-import fcntl
 import os
+if os.name == 'nt':
+    import msvcrt
+else:
+    import fcntl
 from typing import Any, TypeVar, Dict
 import string
 import time
@@ -443,8 +446,14 @@ class Internal:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
                 # Set the socket to non-blocking
-                flags = fcntl.fcntl(sock, fcntl.F_GETFL)
-                fcntl.fcntl(sock, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+                if os.name == 'nt': # Windows
+                    # Get socket file descriptor
+                    fd = sock.fileno()
+                    msvcrt.setmode(fd, os.O_BINARY)
+                    sock.setblocking(False)
+                else: # Unix/Linux
+                    flags = fcntl.fcntl(sock, fcntl.F_GETFL)
+                    fcntl.fcntl(sock, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
                 # Server address setup
                 servaddr = ('255.255.255.255', 5809)
@@ -493,10 +502,8 @@ class Internal:
         retro.transformTargetPoseRobotSpace = self.safeJSONAccess(data, retro.keyTransformTargetPoseRobotSpace, default)
         retro.transformCameraPoseRobotSpace = self.safeJSONAccess(data, retro.keyTransformCameraPoseRobotSpace, default)
         retro.transformRobotPoseFieldSpace = self.safeJSONAccess(data, retro.keyTransformRobotPoseFieldSpace, default)
-        retro.targetPixels.X() = self.safeJSONAccess(data, retro.keyTargetPixels.X(), 0.0)
-        retro.targetPixels.Y() = self.safeJSONAccess(data, retro.keyTargetPixels.Y(), 0.0)
-        retro.targetDegreesCrosshairAdjusted.X() = self.safeJSONAccess(data, retro.targetDegreesCrosshairAdjusted.X(), 0.0)
-        retro.targetDegreesCrosshairAdjusted.Y() = self.safeJSONAccess(data, retro.targetDegreesCrosshairAdjusted.Y(), 0.0)
+        retro.targetPixels = wpimath.geometry.Translation2d(self.safeJSONAccess(data, retro.keyTargetPixels.X(), 0.0), self.safeJSONAccess(data, retro.keyTargetPixels.Y(), 0.0))
+        retro.targetDegreesCrosshairAdjusted = wpimath.geometry.Translation2d(self.safeJSONAccess(data, retro.targetDegreesCrosshairAdjusted.X(), 0.0), self.safeJSONAccess(data, retro.targetDegreesCrosshairAdjusted.Y(), 0.0))
         retro.targetAreaNormalized = self.safeJSONAccess(data, retro.targetAreaNormalized, 0.0)
         retro.targetCorners = self.safeJSONAccess(data, retro.targetCorners, [])
     
@@ -511,10 +518,8 @@ class Internal:
         fiducials.transformTargetPoseRobotSpace = self.safeJSONAccess(data, fiducials.keyTransformTargetPoseRobotSpace, default)
         fiducials.transformCameraPoseRobotSpace = self.safeJSONAccess(data, fiducials.keyTransformCameraPoseRobotSpace, default)
         fiducials.transformRobotPoseFieldSpace = self.safeJSONAccess(data, fiducials.keyTransformRobotPoseFieldSpace, default)
-        fiducials.targetPixels.X() = self.safeJSONAccess(data, fiducials.keyTargetPixels.X(), 0.0)
-        fiducials.targetPixels.Y() = self.safeJSONAccess(data, fiducials.keyTargetPixels.Y(), 0.0)
-        fiducials.targetDegreesCrosshairAdjusted.X() = self.safeJSONAccess(data, fiducials.targetDegreesCrosshairAdjusted.X(), 0.0)
-        fiducials.targetDegreesCrosshairAdjusted.Y() = self.safeJSONAccess(data, fiducials.targetDegreesCrosshairAdjusted.Y(), 0.0)
+        fiducials.targetPixels = wpimath.geometry.Translation2d(self.safeJSONAccess(data, fiducials.keyTargetPixels.X(), 0.0), self.safeJSONAccess(data, fiducials.keyTargetPixels.Y(), 0.0))
+        fiducials.targetDegreesCrosshairAdjusted = wpimath.geometry.Translation2d(self.safeJSONAccess(data, fiducials.targetDegreesCrosshairAdjusted.X(), 0.0), self.safeJSONAccess(data, fiducials.targetDegreesCrosshairAdjusted.Y(), 0.0))
         fiducials.targetAreaNormalized = self.safeJSONAccess(data, fiducials.targetAreaNormalized, 0.0)
         fiducials.targetCorners = self.safeJSONAccess(data, fiducials.targetCorners, [])
 
@@ -530,10 +535,8 @@ class Internal:
         detection.transformTargetPoseRobotSpace = self.safeJSONAccess(data, detection.keyTransformTargetPoseRobotSpace, default)
         detection.transformCameraPoseRobotSpace = self.safeJSONAccess(data, detection.keyTransformCameraPoseRobotSpace, default)
         detection.transformRobotPoseFieldSpace = self.safeJSONAccess(data, detection.keyTransformRobotPoseFieldSpace, default)
-        detection.targetPixels.X() = self.safeJSONAccess(data, detection.keyTargetPixels.X(), 0.0)
-        detection.targetPixels.Y() = self.safeJSONAccess(data, detection.keyTargetPixels.Y(), 0.0)
-        detection.targetDegreesCrosshairAdjusted.X() = self.safeJSONAccess(data, detection.targetDegreesCrosshairAdjusted.X(), 0.0)
-        detection.targetDegreesCrosshairAdjusted.Y() = self.safeJSONAccess(data, detection.targetDegreesCrosshairAdjusted.Y(), 0.0)
+        detection.targetPixels = wpimath.geometry.Translation2d(self.safeJSONAccess(data, detection.keyTargetPixels.X(), 0.0), self.safeJSONAccess(data, detection.keyTargetPixels.Y(), 0.0))
+        detection.targetDegreesCrosshairAdjusted = wpimath.geometry.Translation2d(self.safeJSONAccess(data, detection.targetDegreesCrosshairAdjusted.X(), 0.0), self.safeJSONAccess(data, detection.targetDegreesCrosshairAdjusted.Y(), 0.0))
         detection.targetAreaNormalized = self.safeJSONAccess(data, detection.targetAreaNormalized, 0.0)
         detection.targetCorners = self.safeJSONAccess(data, detection.targetCorners, [])
 
@@ -549,10 +552,8 @@ class Internal:
         classification.transformTargetPoseRobotSpace = self.safeJSONAccess(data, classification.keyTransformTargetPoseRobotSpace, default)
         classification.transformCameraPoseRobotSpace = self.safeJSONAccess(data, classification.keyTransformCameraPoseRobotSpace, default)
         classification.transformRobotPoseFieldSpace = self.safeJSONAccess(data, classification.keyTransformRobotPoseFieldSpace, default)
-        classification.targetPixels.X() = self.safeJSONAccess(data, classification.keyTargetPixels.X(), 0.0)
-        classification.targetPixels.Y() = self.safeJSONAccess(data, classification.keyTargetPixels.Y(), 0.0)
-        classification.targetDegreesCrosshairAdjusted.X() = self.safeJSONAccess(data, classification.targetDegreesCrosshairAdjusted.X(), 0.0)
-        classification.targetDegreesCrosshairAdjusted.Y() = self.safeJSONAccess(data, classification.targetDegreesCrosshairAdjusted.Y(), 0.0)
+        classification.targetPixels = wpimath.geometry.Translation2d(self.safeJSONAccess(data, classification.keyTargetPixels.X(), 0.0), self.safeJSONAccess(data, classification.keyTargetPixels.Y(), 0.0))
+        classification.targetDegreesCrosshairAdjusted = wpimath.geometry.Translation2d(self.safeJSONAccess(data, classification.targetDegreesCrosshairAdjusted.X(), 0.0), self.safeJSONAccess(data, classification.targetDegreesCrosshairAdjusted.Y(), 0.0))
         classification.targetAreaNormalized = self.safeJSONAccess(data, classification.targetAreaNormalized, 0.0)
         classification.targetCorners = self.safeJSONAccess(data, classification.targetCorners, [])
 
