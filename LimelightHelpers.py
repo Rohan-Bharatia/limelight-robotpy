@@ -15,42 +15,6 @@ from typing import Any, TypeVar, Dict
 import string
 import time
 import json
-import ifaddr
-import ipaddress
-
-T = TypeVar("T")
-
-def searchForLimelights(broadcast=5809, listen=5809, timeout=2, debug=False) -> bool:
-    networks = []
-    for adapter in ifaddr.get_adapters():
-        for ip in adapter.ips:
-            if isinstance(ip.ip, str):
-                net = ipaddress.ip_network(f"{ip.ip}/{ip.network_prefix}", strict=False)
-                networks.append((adapter.name, ip.ip, net.broadcast_address))
-            else:
-                continue
-    for name, ip, broadcast in networks:
-        if debug:
-            print(f"Adapter: {name}, IP: {ip}, Broadcast: {broadcast}")
-    for _, _, broadcast in networks:
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
-                sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                sock.sendto("LLPhoneHome".encode(), (str(broadcast), broadcast))
-        except Exception as e:
-            print(f"Failed to broadcast on {broadcast}: {e}")
-    discovered_devices = []
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as sock:
-        sock.bind(("", listen))
-        sock.settimeout(timeout)
-        try:
-            while True:
-                data, addr = sock.recvfrom(1024)
-                discovered_devices.append(addr[0])
-                #print(f"Received data from {addr}: {data.decode()}")
-        except socket.timeout:
-            pass
-    return discovered_devices
 
 def sanitizeName(name: string) -> string:
     if name == "":
